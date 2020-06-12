@@ -1,25 +1,61 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import './App.css';
+import { Home } from './pages/Home';
+import Login from './pages/Login';
+import { Signup } from './pages/Signup';
+import { AuthContext, AuthProvider } from './context/AuthContext';
+import AppShell from './AppShell';
+import { Dashboard } from './pages/Dashboard';
+import { FetchProvider } from './context/FetchContext';
+import AddPrescription from './pages/AddPrescription';
+
+const AuthenticatedRoute = ({ children, ...rest }) => {
+  const authContext = useContext(AuthContext)
+  return (
+    <Route {...rest} render={() =>
+      authContext.isAuthenticated() ? (
+        <AppShell>
+          {children}
+        </AppShell>
+      ) : (
+          <Redirect to="/" />
+        )} />
+  )
+}
+const AppRoutes = () => {
+  return (
+    <Switch>
+      <Route exact path="/">
+        <Home />
+      </Route>
+      <Route path="/login">
+        <Login />
+      </Route>
+      <Route path="/signup">
+        <Signup />
+      </Route>
+      <AuthenticatedRoute path="/dashboard">
+        <Dashboard />
+      </AuthenticatedRoute>
+      <AuthenticatedRoute path="/add-prescription">
+        <AddPrescription />
+      </AuthenticatedRoute>
+    </Switch>
+  )
+}
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <AuthProvider>
+        <FetchProvider>
+          <div className="bg-gray-100">
+            <AppRoutes />
+          </div>
+        </FetchProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
